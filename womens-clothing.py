@@ -1,9 +1,9 @@
 #import textblob
-from textblob import TextBlob
-from textblob import Blobber
-from textblob.sentiments import NaiveBayesAnalyzer
+#from textblob import TextBlob
+#from textblob import Blobber
+#from textblob.sentiments import NaiveBayesAnalyzer
 from textblob.classifiers import NaiveBayesClassifier
-import nltk
+#import nltk
 #opinion = TextBlob("movie was good.")
 #opinion.words
 #opinion.sentiment
@@ -21,12 +21,13 @@ np.unique(df["Recommended IND"].values)
 df = df.dropna()
 
 # for textblob - necessary?
-df['Recommended IND'] = np.where(df['Recommended IND'] == 1, 'pos', 'neg')
+#df['Recommended IND'] = np.where(df['Recommended IND'] == 1, 'pos', 'neg')
 
 # combine title and review text
 df['test'] = df['Title'] + ' ' + df['Review Text']
 
 # split into 80% train 20% test
+np.random.seed(0)
 msk = np.random.rand(len(df)) < 0.8
 train = df[msk]
 test = df[~msk]
@@ -49,7 +50,7 @@ def make_predictions():
     for i in range(len(tuples_test)):
         classification = cl.classify(tuples_test[i][0])
         predicted_classifications.append(classification)
-    
+
 make_predictions()
     
 # predicted_classifications.count('pos')
@@ -62,8 +63,8 @@ def accuracy():
         if predicted_classifications[i] == tuples_test[i][1]:
             countCorrect += 1
     accuracy = (countCorrect / len(predicted_classifications)) * 100
-    return accuracy
-    
+    print('classifier is correct', accuracy, 'of the time')
+
 accuracy()
     
 def return_incorrect():
@@ -72,7 +73,19 @@ def return_incorrect():
         if predicted_classifications[i] != tuples_test[i][1]:
             incorrectIndexes.append(i)
     return incorrectIndexes
-    
+
 return_incorrect()
 
 # tuples_test[97]
+
+percent_positive = len(df[df['Recommended IND'] == 1]) / len(df) * 100
+print(percent_positive, 'of reviews are positive')
+
+#confusion_matrix(predicted_classifications, [x[1] for x in tuples_test])
+
+predicted = pd.Series(predicted_classifications)
+actual = pd.Series([x[1] for x in tuples_test])
+pd.crosstab(actual, predicted, rownames = ['True'], colnames=['Predicted'], margins=True)
+#pd.crosstab([x[1] for x in tuples_test], predicted_classifications, rownames = ['True'], colnames=['Predicted'], margins=True)
+
+#cm = confusion_matrix(predicted_classifications, [x[1] for x in tuples_test], labels = [0, 1])
